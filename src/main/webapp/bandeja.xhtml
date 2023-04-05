@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+	  xmlns:f="http://xmlns.jcp.org/jsf/core"
+	  xmlns:ui = "http://java.sun.com/jsf/facelets">
+    <h:head>
+        <title>Login</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+	
+        <link rel="stylesheet" type="text/css" href="css/style.css" />
+    
+        <!--Not working eigther in the folder "recources" or "webapp"-->
+	    <!--<h:outputStylesheet name="/css/style.css"  />-->
+	
+	</h:head>
+	
+    <h:body class="body">
+    	
+    	<h:form>  
+    
+		    <p:menubar>
+		        <p:menuitem value="Seguimiento" url="http://www.primefaces.org" icon="pi pi-times" />
+		        <p:menuitem value="Consulta" url="http://www.primefaces.org" icon="pi pi-times" />
+		 
+		        <f:facet name="options">
+		            <p:inputText style="margin:1px 10px 1px 1px;" placeholder="Search"/>
+		            <p:commandButton value="Salir" action="#{loginController.logout}" icon="pi pi-home" ajax="false" />
+		        </f:facet>
+		    </p:menubar>
+		</h:form>
+		
+
+			
+        <div class="header">
+        <div class="menu-header">
+
+	      <!--The menu and items are included as a file -->			
+	      <!--ui:include src="menu.xhtml"/-->
+	    <h1 >Sistema de Correspondencia</h1>  
+		    
+      </div>
+     </div>
+     
+     <p:growl id="msg" showDetail="true" showSummary="true" >
+        <p:autoUpdate />
+    </p:growl>
+          
+    <f:event type="preRenderView" listener="#{correspondenciaController.inicio}"/>      
+                
+     <h:form id="frm">
+     
+     	<h:panelGrid columns="3" >
+	     	<p:commandButton value="Nuevo Documento" actionListener="#{correspondenciaController.nuevoDocumento}" oncomplete="PF('wdlgNewDoc').show();" update=":frm :dlgNewDoc"/>	
+	     			
+	    </h:panelGrid>
+	    
+     		
+     		
+		<br />
+                  <p:dataTable id="data" value="#{correspondenciaController.lstDocumentoGenerado}" var="doc" editable="true" rowIndexVar="row" reflow="true">
+                      
+                      <f:facet name="header">
+                          Correspondencia enviada
+                      </f:facet>
+                      <p:column headerText="N°" width="28" >
+                          <p:outputLabel value="#{row + 1}" />
+                      </p:column>
+
+                      <p:column headerText="Cite">                            
+                          <p:outputLabel value="#{doc.codigo}" />                         
+                      </p:column>                
+
+                      <p:column headerText="Referencia">                            
+                          <p:outputLabel value="#{doc.referencia}" />                         
+                      </p:column>
+
+				   <p:column headerText="Destino">                            
+                          <p:outputLabel value="#{doc.usuarioDestino.nombreCompleto}" />                         
+                      </p:column>
+                      
+                      <p:column headerText="Estado">                            
+                          <p:outputLabel value="#{doc.estado}" />                         
+                      </p:column>
+                      
+                      <p:column headerText="Acciones" style="text-align: center">
+                              <p:commandButton rendered="#{doc.estado=='GENERADO'}" value="Derivar" actionListener="#{correspondenciaController.derivarDocumento(doc)}" update="data" title="Derivar" style="height: 27px;" styleClass="btn btn-danger"/>
+                              <p:commandButton value="Ver" actionListener="#{correspondenciaController.verDocumento(doc)}" update=":dlgNewDoc" title="Ver" oncomplete="PF('wdlgNewDoc').show();" style="height: 27px;" styleClass="btn btn-danger"/>
+                      </p:column>                       
+                   </p:dataTable>
+                   
+                   
+                 <br />
+                  <p:dataTable id="dataB" value="#{correspondenciaController.lstCorreRecibida}" var="cor" editable="true" rowIndexVar="row" reflow="true">
+                      
+                      <f:facet name="header">
+                          Correspondencia Bandeja de Entrada
+                      </f:facet>
+                      <p:column headerText="N°" width="28" >
+                          <p:outputLabel value="#{row + 1}" />
+                      </p:column>
+
+					<p:column headerText="Remite">                            
+                          <p:outputLabel value="#{cor.documento.usuarioRemite.nombreCompleto}" />                         
+                      </p:column>
+                      
+                      <p:column headerText="Cite">                            
+                          <p:outputLabel value="#{cor.documento.codigo}" />                         
+                      </p:column> 
+                      
+                      <p:column headerText="Referencia">                            
+                          <p:outputLabel value="#{cor.documento.referencia}" />                         
+                      </p:column>
+                      
+                      <p:column headerText="Estado">                            
+                          <p:outputLabel value="#{cor.documento.estado}" />                         
+                      </p:column>       
+                      
+                      <p:column headerText="Acciones" style="text-align: center">
+                              <p:commandButton rendered="#{cor.documento.estado=='DERIVADO'}" value="Recepcionar" actionListener="#" update="dataB" title="Derivar" style="height: 27px;" styleClass="btn btn-danger"/>
+                              <p:commandButton value="Ver" actionListener="#{correspondenciaController.verDocumento(cor.documento)}" update="dataB :dlgNewDoc" title="Ver" oncomplete="PF('wdlgNewDoc').show();" style="height: 27px;" styleClass="btn btn-danger"/>
+                      </p:column>      
+                 </p:dataTable>  
+                   
+                   
+     
+     </h:form>
+     
+     
+     
+     <!--f:selectItem value="#{null}" itemLabel="Seleccione Tipo" noSelectionOption="true" /-->
+  	     	<!-- NuevoDOc -->
+             <p:dialog id="dlgNewDoc" header="Documento" widgetVar="wdlgNewDoc" showEffect="fade" closeOnEscape="false" width="800"  modal="true">
+                 <h:form id="frmDlgNewDoc">
+                     <h:panelGrid columns="2" cellpadding="4px" width="500">
+
+
+                         <p:outputLabel value="Tipo:" />
+                         <p:selectOneMenu value="#{correspondenciaController.documentoEdit.tipo}" required="false" title="Tipo">
+                    <f:selectItem itemLabel="INFORME" itemValue="INFORME"/>
+                    <f:selectItem itemLabel="NOTA INTERNA" itemValue="NOTA_INTERNA"/>
+                         </p:selectOneMenu>
+
+                         <p:outputLabel value="Cite: " />
+                         <p:inputText value="#{correspondenciaController.documentoEdit.codigo}" placeholder="INF-011/2023" required="false" />
+                         <p:outputLabel value="Fecha"/>
+                         <p:calendar value="#{correspondenciaController.documentoEdit.fechaCreacion}" locale="es" pattern="dd/MM/yyyy" required="true" mindate="01/01/2023" maxdate="07/15/2060"/>
+
+				<p:outputLabel value="Destino: " />
+				<p:selectOneMenu value="#{correspondenciaController.idUsuarioDestino}" required="false" title="A quien esta dirigido">
+                             <f:selectItem value="#{null}" itemLabel="Seleccione Destino" noSelectionOption="true" />
+                    <f:selectItems value="#{correspondenciaController.lstDestino}" var="des" itemLabel="#{des.nombreCompleto}" itemValue="#{des.id}" />
+                         </p:selectOneMenu>
+                         
+                         <p:outputLabel value="Asunto:" />
+                         <p:inputText value="#{correspondenciaController.documentoEdit.referencia}" required="false" title="Referencia" />
+
+                     </h:panelGrid>
+                     
+                     <p:textEditor widgetVar="editor2" value="#{correspondenciaController.documentoEdit.contenido}" height="300" width="500" placeholder="Enter your content" required="true" secure="false">
+		            <f:facet name="toolbar">
+		             <span class="ql-formats">
+		                <button class="ql-bold"></button>
+		                <button class="ql-italic"></button>
+		                <button class="ql-underline"></button>
+		                <button class="ql-strike"></button>
+		            </span>
+		                <span class="ql-formats">
+		                <select class="ql-font"></select>
+		                <select class="ql-size"></select>
+		            </span>
+		            </f:facet>
+		        </p:textEditor>
+                         
+                         <p:commandButton value="Generar" title="Generar" actionListener="#{correspondenciaController.generarDocumento}" icon="fa fa-check" styleClass="btn btn-success" oncomplete="PF('wdlgNewDoc').hide();" update=":frm"/>
+                         <!--update=":frmData:dataTable, :msg @(form)"-->
+                 </h:form>
+             </p:dialog>
+  
+            
+	 <div class="body-content">
+            
+    </div>
+    </h:body>
+</html>
+
